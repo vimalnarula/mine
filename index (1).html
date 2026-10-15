@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CardFinder – Best Credit Card for Your Purpose</title>
+<style>
+  :root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --ink: #1c2333;
+    --muted: #667085;
+    --brand: #4f46e5;
+    --brand-soft: #eef0ff;
+    --good: #12805c;
+    --good-soft: #e3f6ee;
+    --border: #e4e7ee;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    color: #fff;
+    padding: 56px 20px 80px;
+    text-align: center;
+  }
+  header h1 { font-size: clamp(1.8rem, 5vw, 2.8rem); margin-bottom: 10px; }
+  header p { opacity: .9; max-width: 560px; margin: 0 auto; }
+  main { max-width: 960px; margin: -48px auto 40px; padding: 0 16px; }
+
+  .panel {
+    background: var(--card);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 30px rgba(28, 35, 51, .08);
+    margin-bottom: 24px;
+  }
+  .panel h2 { font-size: 1rem; margin-bottom: 12px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 10px; }
+  .chip {
+    border: 1.5px solid var(--border);
+    background: #fff;
+    color: var(--ink);
+    padding: 10px 18px;
+    border-radius: 999px;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .chip:hover { border-color: var(--brand); }
+  .chip.active { background: var(--brand); border-color: var(--brand); color: #fff; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 20px; align-items: center; }
+  .filters label { font-size: .9rem; color: var(--muted); display: flex; gap: 8px; align-items: center; }
+  select {
+    padding: 8px 12px; border-radius: 8px; border: 1.5px solid var(--border);
+    font-size: .9rem; background: #fff; color: var(--ink);
+  }
+
+  .result-title { margin: 8px 0 16px; font-size: 1.1rem; }
+  .result-title span { color: var(--muted); font-weight: normal; font-size: .9rem; }
+
+  .cc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 14px;
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 18px;
+    align-items: center;
+  }
+  .cc.top { border: 2px solid var(--brand); }
+  .rank {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--brand-soft); color: var(--brand);
+    display: grid; place-items: center; font-weight: 700;
+  }
+  .cc.top .rank { background: var(--brand); color: #fff; }
+  .cc h3 { font-size: 1.05rem; }
+  .bank { color: var(--muted); font-size: .85rem; margin-bottom: 6px; }
+  .note { font-size: .9rem; margin-bottom: 8px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .tag { background: var(--brand-soft); color: var(--brand); font-size: .75rem; padding: 3px 10px; border-radius: 999px; }
+  .tag.fee { background: #f1f2f6; color: var(--muted); }
+  .tag.free { background: var(--good-soft); color: var(--good); }
+  .rate { text-align: right; }
+  .rate strong { display: block; font-size: 1.7rem; color: var(--good); line-height: 1.1; }
+  .rate small { color: var(--muted); font-size: .75rem; }
+  .badge {
+    display: inline-block; background: var(--good-soft); color: var(--good);
+    font-size: .7rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;
+    margin-left: 8px; vertical-align: middle;
+  }
+  .empty { text-align: center; color: var(--muted); padding: 30px; }
+
+  .disclaimer {
+    font-size: .8rem; color: var(--muted); text-align: center;
+    max-width: 700px; margin: 30px auto 0;
+  }
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: .8rem; }
+
+  @media (max-width: 600px) {
+    .cc { grid-template-columns: 44px 1fr; }
+    .rate { grid-column: 1 / -1; text-align: left; display: flex; align-items: baseline; gap: 8px; }
+    .rate strong { font-size: 1.4rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>💳 CardFinder</h1>
+  <p>Pick what you spend on most, and we'll rank the credit cards that reward you best for it.</p>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>What do you want the card for?</h2>
+    <div class="chips" id="chips"></div>
+
+    <div class="filters">
+      <label>Annual fee
+        <select id="feeFilter">
+          <option value="99999">Any</option>
+          <option value="0">Free only</option>
+          <option value="1000">Up to ₹1,000</option>
+          <option value="2500">Up to ₹2,500</option>
+        </select>
+      </label>
+    </div>
+  </section>
+
+  <h2 class="result-title" id="resultTitle"></h2>
+  <div id="results"></div>
+
+  <p class="disclaimer">
+    Reward rates are approximate effective returns and usually have monthly caps, exclusions and
+    eligibility rules. Banks change offers often, so always confirm on the bank's official site
+    before applying. This tool is for general guidance, not financial advice.
+  </p>
+</main>
+
+<footer>CardFinder · Built with plain HTML, CSS &amp; JavaScript</footer>
+
+<script>
+  // ---- Data: edit/add cards here. rates = approx % value back per category ----
+  const categories = [
+    { id: "shopping",  label: "🛍️ Shopping" },
+    { id: "dining",    label: "🍔 Food & Dining" },
+    { id: "groceries", label: "🥦 Groceries" },
+    { id: "travel",    label: "✈️ Travel" },
+    { id: "fuel",      label: "⛽ Fuel" },
+    { id: "bills",     label: "💡 Bills & Utilities" },
+    { id: "all",       label: "⭐ Everything" }
+  ];
+
+  const cards = [
+    { name: "SBI Cashback Card", bank: "SBI Card", fee: 999, base: 1,
+      rates: { shopping: 5 },
+      notes: { shopping: "5% cashback on most online spends (monthly cap applies)." },
+      perks: ["Auto-credited cashback", "No merchant tie-up needed"] },
+
+    { name: "Amazon Pay ICICI Card", bank: "ICICI Bank", fee: 0, base: 1,
+      rates: { shopping: 5, dining: 2, bills: 2, groceries: 2 },
+      notes: { shopping: "Up to 5% back on Amazon for Prime members, 2% at partner merchants." },
+      perks: ["Lifetime free", "Great first card"] },
+
+    { name: "Flipkart Axis Bank Card", bank: "Axis Bank", fee: 500, base: 1.5,
+      rates: { shopping: 4, dining: 4 },
+      notes: { shopping: "Higher cashback on Flipkart & Myntra, 4% on select partner brands." },
+      perks: ["Lounge access", "Low fee"] },
+
+    { name: "HDFC Millennia", bank: "HDFC Bank", fee: 1000, base: 1,
+      rates: { shopping: 5, dining: 5 },
+      notes: { shopping: "5% cashback on popular online merchants like Amazon, Flipkart, Myntra." },
+      perks: ["Fee waiver on spend milestone", "Good all-rounder"] },
+
+    { name: "Swiggy HDFC Bank Card", bank: "HDFC Bank", fee: 500, base: 1,
+      rates: { dining: 10, groceries: 10, shopping: 5 },
+      notes: { dining: "10% back on Swiggy food & Instamart, 5% on other online spends." },
+      perks: ["Swiggy One membership", "Caps apply"] },
+
+    { name: "Axis ACE", bank: "Axis Bank", fee: 499, base: 1.5,
+      rates: { bills: 5, dining: 4, travel: 1.5 },
+      notes: { bills: "5% on bill payments via Google Pay, 4% on Swiggy/Zomato/Ola." },
+      perks: ["Strong flat 1.5% base", "Low fee"] },
+
+    { name: "Tata Neu Infinity HDFC", bank: "HDFC Bank", fee: 1499, base: 1.5,
+      rates: { shopping: 5, groceries: 5, travel: 2 },
+      notes: { shopping: "5% NeuCoins on Tata Neu brands (BigBasket, Croma, Tata CLiQ, etc.)." },
+      perks: ["Airport lounge access", "UPI spends earn rewards"] },
+
+    { name: "HDFC Regalia Gold", bank: "HDFC Bank", fee: 2500, base: 1.3,
+      rates: { travel: 4, shopping: 2, dining: 2 },
+      notes: { travel: "Strong travel & lifestyle rewards plus domestic and international lounge visits." },
+      perks: ["Lounge access", "Milestone benefits"] },
+
+    { name: "IRCTC SBI Platinum", bank: "SBI Card", fee: 300, base: 1,
+      rates: { travel: 5 },
+      notes: { travel: "Big value back on IRCTC train bookings, plus railway lounge access." },
+      perks: ["Fuel surcharge waiver", "Ideal for train travellers"] },
+
+    { name: "BPCL SBI Card", bank: "SBI Card", fee: 499, base: 1,
+      rates: { fuel: 4.25 },
+      notes: { fuel: "Extra rewards on BPCL fuel & Bharat Gas payments (caps apply)." },
+      perks: ["Fuel surcharge waiver", "Bonus on utilities"] }
+  ];
+
+  // ---- App logic ----
+  let selected = "shopping";
+  const chipsEl = document.getElementById("chips");
+  const resultsEl = document.getElementById("results");
+  const titleEl = document.getElementById("resultTitle");
+  const feeEl = document.getElementById("feeFilter");
+
+  function renderChips() {
+    chipsEl.innerHTML = "";
+    categories.forEach(c => {
+      const b = document.createElement("button");
+      b.className = "chip" + (c.id === selected ? " active" : "");
+      b.textContent = c.label;
+      b.onclick = () => { selected = c.id; renderChips(); renderResults(); };
+      chipsEl.appendChild(b);
+    });
+  }
+
+  function rateFor(card) {
+    if (selected === "all") return card.base;
+    return card.rates[selected] ?? card.base;
+  }
+
+  function renderResults() {
+    const maxFee = Number(feeEl.value);
+    const label = categories.find(c => c.id === selected).label;
+
+    const list = cards
+      .filter(c => c.fee <= maxFee)
+      .map(c => ({ card: c, rate: rateFor(c) }))
+      .sort((a, b) => b.rate - a.rate || a.card.fee - b.card.fee);
+
+    titleEl.innerHTML = `Best cards for ${label} <span>(${list.length} found)</span>`;
+
+    if (!list.length) {
+      resultsEl.innerHTML = '<div class="panel empty">No cards match that fee limit. Try a higher one.</div>';
+      return;
+    }
+
+    resultsEl.innerHTML = list.map(({ card, rate }, i) => {
+      const note = selected === "all"
+        ? "Flat reward rate on all spends with no category restrictions."
+        : (card.notes[selected] || "No special bonus here, so you'd earn the card's base rate.");
+      const feeTag = card.fee === 0
+        ? '<span class="tag free">Lifetime free</span>'
+        : `<span class="tag fee">₹${card.fee.toLocaleString("en-IN")} / year</span>`;
+      return `
+        <article class="cc ${i === 0 ? "top" : ""}">
+          <div class="rank">${i + 1}</div>
+          <div>
+            <h3>${card.name}${i === 0 ? '<span class="badge">BEST MATCH</span>' : ""}</h3>
+            <div class="bank">${card.bank}</div>
+            <p class="note">${note}</p>
+            <div class="tags">${feeTag}${card.perks.map(p => `<span class="tag">${p}</span>`).join("")}</div>
+          </div>
+          <div class="rate"><strong>~${rate}%</strong><small>value back</small></div>
+        </article>`;
+    }).join("");
+  }
+
+  feeEl.onchange = renderResults;
+  renderChips();
+  renderResults();
+</script>
+</body>
+</html>
